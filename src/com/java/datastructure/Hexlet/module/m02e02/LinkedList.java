@@ -82,16 +82,7 @@ public class LinkedList<T> implements List<T> {
     @Override
     public boolean add(final T t) {
         // BEGIN (write your solution here)
-        Item<T> lastItem = last;
-        Item<T> newItem = new Item(t, lastItem, null);
-
-        if (lastItem == null) {
-            first = newItem;
-        } else {
-            last = newItem;
-            lastItem.next = newItem;
-        }
-        size++;
+        linkNewItem(t);
         return true;
         // END
     }
@@ -103,7 +94,6 @@ public class LinkedList<T> implements List<T> {
 
             if (currentItem.equals(o)) {
 
-                T item = currentItem.element;
                 Item<T> prevItem = currentItem.prev;
                 Item<T> nextItem = currentItem.next;
 
@@ -246,8 +236,8 @@ public class LinkedList<T> implements List<T> {
         // BEGIN (write your solution here)
         int indexSourceItem = 0;
         Item<T> previousSpecItem = null;
-        for (Item<T> currentItem = first; currentItem != null ; currentItem = currentItem.next) {
-            if(indexSourceItem == index) {
+        for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
+            if (indexSourceItem == index) {
                 previousSpecItem = currentItem;
                 currentItem.element = element;
             }
@@ -261,18 +251,38 @@ public class LinkedList<T> implements List<T> {
     public T get(final int index) {
         // BEGIN (write your solution here)
         int indexSourceItem = 0;
-        for (Item<T> currentItem = first; currentItem != null ; currentItem = currentItem.next) {
-            if(indexSourceItem == index) {
-                return  currentItem.element;
+        for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
+            if (indexSourceItem == index) {
+                return currentItem.element;
             }
             indexSourceItem++;
         }
-        return  null;
+        return null;
         // END
     }
 
-// BEGIN (write your solution here)
+    // BEGIN (write your solution here)
+    private void linkNewItem(T t) {
+        Item<T> lastItem = last;
+        Item<T> newItem = new Item(t, lastItem, null);
+        last = newItem;
+        if (lastItem == null) {
+            first = newItem;
+        } else {
+            lastItem.next = newItem;
+        }
+        size++;
+    }
 
+    private Item<T> getItem (int index) {
+
+        int indexItem = 0;
+        Item<T> item = first;
+        for (int i = 0; i < index ; i++) {
+            item = item.next;
+        }
+        return item;
+    }
 // END
 
     private class ElementsIterator implements ListIterator<T> {
@@ -288,14 +298,16 @@ public class LinkedList<T> implements List<T> {
         }
 
         public ElementsIterator(final int index) {
+
             // BEGIN (write your solution here)
+            next = (index == size) ? null : getItem(index);
             this.index = index;
             // END
         }
 
         @Override
         public boolean hasNext() {
-            return next != null;
+            return index<size();
         }
 
         @Override
@@ -308,13 +320,19 @@ public class LinkedList<T> implements List<T> {
             lastReturned = next;
             index++;
             next = next.getNext();
-            return next.getElement();
+            return lastReturned.getElement();
             // END
         }
 
         @Override
         public void add(final T element) {
-            LinkedList.this.add(element);
+
+            lastReturned = null;
+            if (next == null) {
+                linkNewItem(element);
+            }
+            index++;
+            //LinkedList.this.add(element);
         }
 
         @Override
@@ -343,13 +361,20 @@ public class LinkedList<T> implements List<T> {
         @Override
         public boolean hasPrevious() {
             // BEGIN (write your solution here)
-            return next.getPrev() != null;
+            if (size == 0) {
+                return false;
+            } else {
+                return true;
+            }
             // END
         }
 
         @Override
         public T previous() {
             // BEGIN (write your solution here)
+            if (!hasPrevious()) {
+                throw new NoSuchElementException();
+            }
             return lastReturned.element;
             // END
         }
