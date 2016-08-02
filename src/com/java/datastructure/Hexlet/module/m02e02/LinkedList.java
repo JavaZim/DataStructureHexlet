@@ -92,24 +92,23 @@ public class LinkedList<T> implements List<T> {
         // BEGIN (write your solution here)
         for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
 
-            if (currentItem.equals(o)) {
+            if (currentItem.element.equals(o)) {
 
                 Item<T> prevItem = currentItem.prev;
                 Item<T> nextItem = currentItem.next;
 
-                if (currentItem == last) {
-                    last = prevItem;
-                    prevItem.next = null;
-                }
-
-                if (currentItem == first) {
+                if (prevItem == null) {
                     first = nextItem;
-                    nextItem.prev = null;
+                } else {
+                    prevItem.next = nextItem;
+                    currentItem.prev = null;
                 }
 
-                if (currentItem != first && currentItem != last) {
-                    prevItem.next = nextItem;
+                if (nextItem == null) {
+                    last = prevItem;
+                } else {
                     nextItem.prev = prevItem;
+                    currentItem.next = null;
                 }
 
                 currentItem.element = null;
@@ -274,11 +273,12 @@ public class LinkedList<T> implements List<T> {
         size++;
     }
 
-    private Item<T> getItem (int index) {
+
+    private Item<T> getItem(int index) {
 
         int indexItem = 0;
         Item<T> item = first;
-        for (int i = 0; i < index ; i++) {
+        for (int i = 0; i < index; i++) {
             item = item.next;
         }
         return item;
@@ -307,7 +307,7 @@ public class LinkedList<T> implements List<T> {
 
         @Override
         public boolean hasNext() {
-            return index<size();
+            return index < size();
         }
 
         @Override
@@ -332,7 +332,6 @@ public class LinkedList<T> implements List<T> {
                 linkNewItem(element);
             }
             index++;
-            //LinkedList.this.add(element);
         }
 
         @Override
@@ -382,13 +381,14 @@ public class LinkedList<T> implements List<T> {
         @Override
         public void remove() {
             // BEGIN (write your solution here)
+
             if (lastReturned == null)
                 throw new IllegalStateException();
-
-            lastReturned = lastReturned.getPrev();
-            next = lastReturned.getNext();
-
+            LinkedList.this.remove(lastReturned.element);
+            lastReturned = null;
             index--;
+
+
             // END
         }
 
