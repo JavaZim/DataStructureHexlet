@@ -29,10 +29,8 @@ public class LinkedList<T> implements List<T> {
     @Override
     public boolean contains(final Object o) {
         // BEGIN (write your solution here)
-        ListIterator listIterator = this.listIterator();
-        while (listIterator.hasNext()) {
-
-            if (listIterator.next().equals(o) == true) {
+        for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
+            if (currentItem.element.equals(o)) {
                 return true;
             }
         }
@@ -48,11 +46,13 @@ public class LinkedList<T> implements List<T> {
     @Override
     public Object[] toArray() {
         // BEGIN (write your solution here)
-        Object[] array =  new Object[this.size()];
-        ListIterator listIterator = this.listIterator();
-        while(listIterator.hasNext()) {
-            array[listIterator.nextIndex()] = listIterator.next();
+
+        Object[] array = new Object[this.size()];
+        int index = 0;
+        for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
+            array[index++] = currentItem.element;
         }
+
         return array;
         // END
     }
@@ -60,21 +60,76 @@ public class LinkedList<T> implements List<T> {
     @Override
     public <T1> T1[] toArray(T1[] a) {
         // BEGIN (write your solution here)
+        if (a.length < size) {
+            a = (T1[]) new Integer[size()];
+        }
 
+        int index = 0;
+        Object[] result = a;
+
+        for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
+            result[index++] = currentItem.element;
+        }
+
+        if (a.length > size()) {
+            a[size()] = null;
+        }
+
+        return a;
         // END
     }
 
     @Override
     public boolean add(final T t) {
         // BEGIN (write your solution here)
+        Item<T> lastItem = last;
+        Item<T> newItem = new Item(t, lastItem, null);
 
+        if (lastItem == null) {
+            first = newItem;
+        } else {
+            last = newItem;
+            lastItem.next = newItem;
+        }
+        size++;
+        return true;
         // END
     }
 
     @Override
     public boolean remove(final Object o) {
         // BEGIN (write your solution here)
+        for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
 
+            if (currentItem.equals(o)) {
+
+                T item = currentItem.element;
+                Item<T> prevItem = currentItem.prev;
+                Item<T> nextItem = currentItem.next;
+
+                if (currentItem == last) {
+                    last = prevItem;
+                    prevItem.next = null;
+                }
+
+                if (currentItem == first) {
+                    first = nextItem;
+                    nextItem.prev = null;
+                }
+
+                if (currentItem != first && currentItem != last) {
+                    prevItem.next = nextItem;
+                    nextItem.prev = prevItem;
+                }
+
+                currentItem.element = null;
+                size--;
+                return true;
+            }
+
+        }
+
+        return false;
         // END
     }
 
@@ -113,14 +168,30 @@ public class LinkedList<T> implements List<T> {
     @Override
     public void clear() {
         // BEGIN (write your solution here)
+        for (Item<T> current = first; current != null; ) {
 
+            Item<T> nextItem = current.next;
+
+            current.element = null;
+            current.prev = null;
+            current.next = null;
+            current = nextItem;
+        }
+
+        first = last = null;
+        size = 0;
         // END
     }
 
     @Override
     public T remove(final int index) {
         // BEGIN (write your solution here)
-
+        Item<T> currentItem = first;
+        for (int i = 0; i < index; i++) {
+            currentItem = currentItem.next;
+        }
+        remove(currentItem);
+        return currentItem.element;
         // END
     }
 
@@ -150,8 +221,14 @@ public class LinkedList<T> implements List<T> {
     @Override
     public int indexOf(final Object target) {
         // BEGIN (write your solution here)
-
-        // END
+        int index = 0;
+        for (Item<T> currentItem = first; currentItem != null; currentItem = currentItem.next) {
+            if (currentItem.getElement().equals(target)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;// END
     }
 
     @Override
@@ -167,20 +244,36 @@ public class LinkedList<T> implements List<T> {
     @Override
     public T set(final int index, final T element) {
         // BEGIN (write your solution here)
-
+        int indexSourceItem = 0;
+        Item<T> previousSpecItem = null;
+        for (Item<T> currentItem = first; currentItem != null ; currentItem = currentItem.next) {
+            if(indexSourceItem == index) {
+                previousSpecItem = currentItem;
+                currentItem.element = element;
+            }
+            indexSourceItem++;
+        }
+        return previousSpecItem.getElement();
         // END
     }
 
     @Override
     public T get(final int index) {
         // BEGIN (write your solution here)
-
+        int indexSourceItem = 0;
+        for (Item<T> currentItem = first; currentItem != null ; currentItem = currentItem.next) {
+            if(indexSourceItem == index) {
+                return  currentItem.element;
+            }
+            indexSourceItem++;
+        }
+        return  null;
         // END
     }
 
-    // BEGIN (write your solution here)
+// BEGIN (write your solution here)
 
-    // END
+// END
 
     private class ElementsIterator implements ListIterator<T> {
 
@@ -236,14 +329,14 @@ public class LinkedList<T> implements List<T> {
         @Override
         public int previousIndex() {
             // BEGIN (write your solution here)
-            return index-1;
+            return index - 1;
             // END
         }
 
         @Override
         public int nextIndex() {
             // BEGIN (write your solution here)
-            return index+1;
+            return index + 1;
             // END
         }
 
@@ -264,7 +357,7 @@ public class LinkedList<T> implements List<T> {
         @Override
         public void remove() {
             // BEGIN (write your solution here)
-            if(lastReturned == null)
+            if (lastReturned == null)
                 throw new IllegalStateException();
 
             lastReturned = lastReturned.getPrev();
